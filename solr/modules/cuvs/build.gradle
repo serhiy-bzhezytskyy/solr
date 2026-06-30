@@ -24,10 +24,10 @@ dependencies {
     changing = true
   }
   implementation libs.cuvs.java
-  implementation libs.opentelemetry.api
-  implementation project(':solr:core')
-  implementation project(':solr:solrj')
-  implementation libs.apache.lucene.core
+  api libs.opentelemetry.api
+  api project(':solr:core')
+  api project(':solr:solrj')
+  api libs.apache.lucene.core
   implementation libs.slf4j.api
 
   testImplementation project(':solr:test-framework')

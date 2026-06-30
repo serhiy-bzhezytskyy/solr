@@ -23,17 +23,17 @@ dependencies {
   implementation platform(project(':platform'))
   implementation platform(libs.fasterxml.jackson.bom)
 
-  implementation project(':solr:core')
-  implementation project(':solr:solrj')
+  api project(':solr:core')
+  api project(':solr:solrj')
   implementation project(':solr:solrj-jetty')
 
-  implementation libs.bc.jose4j
+  api libs.bc.jose4j
 
-  implementation libs.eclipse.jetty.client
+  api libs.eclipse.jetty.client
   implementation libs.eclipse.jetty.http
   implementation libs.google.guava
   implementation libs.slf4j.api
-  implementation libs.jakarta.servlet.api
+  api libs.jakarta.servlet.api
 
   testImplementation project(':solr:test-framework')
   testImplementation libs.apache.lucene.testframework
@@ -49,7 +49,7 @@ dependencies {
     exclude group: "io.netty", module: "netty-all"
   })
   // required by mock-oauth2-server
-  testImplementation libs.fasterxml.jackson.core.databind
+  testRuntimeOnly libs.fasterxml.jackson.core.databind
 
   testImplementation libs.bouncycastle.bcpkix
   testImplementation libs.bouncycastle.bcprov

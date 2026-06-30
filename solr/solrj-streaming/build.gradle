@@ -20,11 +20,11 @@ apply plugin: 'java-library'
 description = 'Solrj-Streaming - SolrJ requiring Streaming Expressions'
 
 dependencies {
-  implementation project(':solr:solrj')
+  api project(':solr:solrj')
 
   // declare dependencies we use even though already declared by solrj-core
   implementation libs.slf4j.api
-  implementation libs.apache.commons.math3
+  api libs.apache.commons.math3
   implementation libs.tdunning.tdigest
 
   testImplementation project(':solr:test-framework')

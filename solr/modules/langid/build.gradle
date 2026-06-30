@@ -20,11 +20,11 @@ apply plugin: 'java-library'
 description = 'Language Identifier module for extracting language from a document being indexed'
 
 dependencies {
-  implementation project(':solr:core')
-  implementation project(':solr:solrj')
+  api project(':solr:core')
+  api project(':solr:solrj')
 
-  implementation libs.azagniotov.langdetect
-  implementation libs.apache.opennlp.tools
+  api libs.azagniotov.langdetect
+  api libs.apache.opennlp.tools
   implementation libs.slf4j.api
 
   testImplementation project(':solr:test-framework')

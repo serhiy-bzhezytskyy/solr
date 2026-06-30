@@ -41,19 +41,23 @@ task echoCp {
 }
 
 dependencies {
-  implementation project(':solr:test-framework')
+  api project(':solr:test-framework')
   implementation project(':solr:core')
-  implementation project(':solr:solrj')
-  implementation project(':solr:solrj-jetty')
+  api project(':solr:solrj')
+  api project(':solr:solrj-jetty')
   implementation project(':solr:solrj-streaming')
 
   implementation libs.apache.lucene.core
   implementation libs.commonsio.commonsio
-  implementation libs.apache.commons.math3
+  api libs.apache.commons.math3
   implementation libs.jctools.core
-  implementation libs.quicktheories.quicktheories
-  implementation libs.openjdk.jmh.core
+  api libs.quicktheories.quicktheories
+  api libs.openjdk.jmh.core
   implementation libs.slf4j.api
   runtimeOnly libs.lmax.disruptor
   annotationProcessor libs.openjdk.jmh.generatorannprocess
+
+  testAnnotationProcessor libs.openjdk.jmh.generatorannprocess
+  testImplementation libs.carrotsearch.randomizedtesting.runner
+  testImplementation libs.junit.junit
 }
