@@ -1,0 +1,11 @@
+# See https://github.com/apache/solr/blob/main/dev-docs/changelog.adoc
+
+title: >
+  Fixed SolrResponseBase.getStatus() and getQTime() throwing a ClassCastException when a
+  non-binary ResponseParser (such as the JSON parser) is used.
+type: fixed
+authors:
+  - name: Serhiy Bzhezytskyy
+links:
+  - name: SOLR-17316
+    url: https://issues.apache.org/jira/browse/SOLR-17316
