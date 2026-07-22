@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import org.apache.lucene.codecs.Codec;
+import org.apache.lucene.codecs.CompoundFormat;
 import org.apache.lucene.index.IndexDeletionPolicy;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -154,7 +155,7 @@ public class SolrIndexWriter extends IndexWriter {
             .setOpenMode(
                 create ? IndexWriterConfig.OpenMode.CREATE : IndexWriterConfig.OpenMode.APPEND)
             .setIndexDeletionPolicy(delPolicy)
-            .setCodec(codec));
+            .setCodec(applyCompoundFileConfig(codec, config)));
     log.debug("Opened Writer {}", name);
     this.name = name;
     infoStream = getConfig().getInfoStream();
@@ -172,6 +173,24 @@ public class SolrIndexWriter extends IndexWriter {
       }
     }
     initMetrics(core);
+  }
+
+  /**
+   * Propagates the compound-file settings ({@code useCompoundFile} and {@code maxCFSSegmentSizeMB})
+   * to the codec's {@link CompoundFormat}. As of Lucene 11 the compound-file decision for merged
+   * segments is made by the codec rather than by {@link IndexWriterConfig#setUseCompoundFile}, so
+   * setting {@code useCompoundFile} only on the {@code IndexWriterConfig} would leave merged
+   * segments unaffected. Returns the same codec instance for call chaining.
+   */
+  private static Codec applyCompoundFileConfig(Codec codec, SolrIndexConfig config) {
+    CompoundFormat compoundFormat = codec.compoundFormat();
+    if (compoundFormat != null) {
+      compoundFormat.setShouldUseCompoundFile(config.useCompoundFile);
+      if (!Double.isInfinite(config.maxCFSSegmentSizeMB)) {
+        compoundFormat.setMaxCFSSegmentSizeMB(config.maxCFSSegmentSizeMB);
+      }
+    }
+    return codec;
   }
 
   @SuppressForbidden(

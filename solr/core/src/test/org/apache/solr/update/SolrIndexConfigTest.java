@@ -101,10 +101,11 @@ public class SolrIndexConfigTest extends SolrTestCaseJ4 {
     h.getCore().setLatestSchema(indexSchema);
     IndexWriterConfig iwc = solrIndexConfig.toIndexWriterConfig(h.getCore());
 
+    assertEquals("maxCFSSegmentSizeMB", 123.0, solrIndexConfig.maxCFSSegmentSizeMB, 0.0);
+
     assertNotNull("null mp", iwc.getMergePolicy());
     assertTrue("mp is not TieredMergePolicy", iwc.getMergePolicy() instanceof TieredMergePolicy);
     TieredMergePolicy mp = (TieredMergePolicy) iwc.getMergePolicy();
-    assertEquals("mp.maxMergeAtOnce", 7, mp.getMaxMergeAtOnce());
     assertEquals("mp.segmentsPerTier", 9, (int) mp.getSegmentsPerTier());
 
     assertNotNull("null ms", iwc.getMergeScheduler());
@@ -138,8 +139,8 @@ public class SolrIndexConfigTest extends SolrTestCaseJ4 {
 
   public void testSortingMPSolrIndexConfigCreation() throws Exception {
     final SortField sortField1 = new SortField("timestamp_i_dvo", SortField.Type.INT, true);
-    final SortField sortField2 = new SortField("id", SortField.Type.STRING, false);
-    sortField2.setMissingValue(SortField.STRING_LAST);
+    final SortField sortField2 =
+        new SortField("id", SortField.Type.STRING, false, SortField.STRING_LAST);
 
     SolrConfig solrConfig =
         new SolrConfig(instanceDir, solrConfigFileNameSortingMergePolicyFactory);
@@ -172,8 +173,8 @@ public class SolrIndexConfigTest extends SolrTestCaseJ4 {
   }
 
   public void testMergeOnFlushMPSolrIndexConfigCreation() throws Exception {
-    final SortField sortField2 = new SortField("id", SortField.Type.STRING, false);
-    sortField2.setMissingValue(SortField.STRING_LAST);
+    final SortField sortField2 =
+        new SortField("id", SortField.Type.STRING, false, SortField.STRING_LAST);
 
     SolrConfig solrConfig =
         new SolrConfig(instanceDir, solrConfigFileNameMergeOnFlushMergePolicyFactory);
@@ -264,6 +265,9 @@ public class SolrIndexConfigTest extends SolrTestCaseJ4 {
 
     ++mSizeExpected;
     assertTrue(m.get("useCompoundFile") instanceof Boolean);
+
+    ++mSizeExpected;
+    assertTrue(m.get("maxCFSSegmentSizeMB") instanceof Double);
 
     ++mSizeExpected;
     assertTrue(m.get("maxBufferedDocs") instanceof Integer);

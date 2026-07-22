@@ -66,12 +66,24 @@ The default Solr configuration sets to flush by RAM usage (`ramBufferSizeMB`).
 
 === useCompoundFile
 
-Controls whether newly written (and not yet merged) index segments should use the <<Compound File Segments>> format.
+Controls whether index segments should use the <<Compound File Segments>> format.
 The default is `false`.
+
+This applies to both newly written (flushed) segments and merged segments.
 
 [source,xml]
 ----
 <useCompoundFile>false</useCompoundFile>
+----
+
+=== maxCFSSegmentSizeMB
+
+The maximum size (in megabytes) a segment may be and still use the <<Compound File Segments>> format when `useCompoundFile` is `true`; larger segments are written as non-compound.
+The default is no limit.
+
+[source,xml]
+----
+<maxCFSSegmentSizeMB>2048.0</maxCFSSegmentSizeMB>
 ----
 
 === ramPerThreadHardLimitMB
@@ -267,10 +279,10 @@ The open files limit might also be tunable for your OS with the Linux/Unix `ulim
 .CFS: New Segments vs Merged Segments
 [NOTE]
 ====
-To configure whether _newly written segments_ should use CFS, see the <<usecompoundfile,`useCompoundFile`>> setting described above.
-To configure whether _merged segments_ use CFS, review the Javadocs for your <<mergepolicyfactory,`mergePolicyFactory`>>.
+Whether segments use CFS is controlled by the <<usecompoundfile,`useCompoundFile`>> and <<maxcfssegmentsizemb,`maxCFSSegmentSizeMB`>> settings described above; both apply to newly written and merged segments alike.
 
-Many <<Merging Index Segments,Merge Policy>> implementations support `noCFSRatio` and `maxCFSSegmentSizeMB` settings with default values that prevent compound files from being used for large segments, but do use compound files for small segments.
+The `noCFSRatio` and `maxCFSSegmentSizeMB` merge-policy options that earlier Lucene versions accepted were removed in Lucene 11 (compound-file selection is no longer a merge-policy concern); use the `<indexConfig>` settings above instead.
+Such options remaining in an existing configuration are ignored with a warning rather than causing an error.
 ====
 
 == Segments Info Screen

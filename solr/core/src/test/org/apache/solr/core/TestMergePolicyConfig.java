@@ -59,8 +59,7 @@ public class TestMergePolicyConfig extends SolrTestCaseJ4 {
       IndexWriterConfig iwc = solrConfig.indexConfig.toIndexWriterConfig(h.getCore());
       assertEquals(useCompoundFile, iwc.getUseCompoundFile());
 
-      TieredMergePolicy tieredMP = assertAndCast(TieredMergePolicy.class, iwc.getMergePolicy());
-      assertEquals(0.5D, tieredMP.getNoCFSRatio(), 0.0D);
+      assertAndCast(TieredMergePolicy.class, iwc.getMergePolicy());
     } finally {
       System.getProperties().remove("testSetNoCFSMergePolicyConfig.useCompoundFile");
     }
@@ -71,8 +70,7 @@ public class TestMergePolicyConfig extends SolrTestCaseJ4 {
     IndexWriterConfig iwc = solrConfig.indexConfig.toIndexWriterConfig(h.getCore());
     assertFalse(iwc.getUseCompoundFile());
 
-    TieredMergePolicy tieredMP = assertAndCast(TieredMergePolicy.class, iwc.getMergePolicy());
-    assertEquals(TieredMergePolicy.DEFAULT_NO_CFS_RATIO, tieredMP.getNoCFSRatio(), 0.0D);
+    assertAndCast(TieredMergePolicy.class, iwc.getMergePolicy());
 
     assertCommitSomeNewDocs();
     assertCompoundSegments(h.getCore(), false);
@@ -87,7 +85,6 @@ public class TestMergePolicyConfig extends SolrTestCaseJ4 {
 
     TieredMergePolicy tieredMP = assertAndCast(TieredMergePolicy.class, iwc.getMergePolicy());
 
-    assertEquals(10, tieredMP.getMaxMergeAtOnce());
     assertEquals(8.0D, tieredMP.getSegmentsPerTier(), 0.0D);
 
     assertCommitSomeNewDocs();
@@ -103,14 +100,13 @@ public class TestMergePolicyConfig extends SolrTestCaseJ4 {
 
     TieredMergePolicy tieredMP = assertAndCast(TieredMergePolicy.class, iwc.getMergePolicy());
 
-    // set by legacy <mergeFactor> setting
-    assertEquals(7, tieredMP.getMaxMergeAtOnce());
-
-    // mp-specific setters
-    assertEquals(0.1D, tieredMP.getNoCFSRatio(), 0.0D);
     // make sure we overrode segmentsPerTier
     // (split from maxMergeAtOnce out of mergeFactor)
     assertEquals(9D, tieredMP.getSegmentsPerTier(), 0.001);
+
+    // <maxCFSSegmentSizeMB> is applied to the codec's CompoundFormat (the Lucene 11 home for the
+    // compound-file size limit, replacing the removed merge-policy noCFSRatio).
+    assertEquals(123.0, h.getCore().getCodec().compoundFormat().getMaxCFSSegmentSizeMB(), 0.0);
 
     assertCommitSomeNewDocs();
     // even though we have a single segment (which is 100% of the size of
@@ -124,8 +120,10 @@ public class TestMergePolicyConfig extends SolrTestCaseJ4 {
 
     assertU(optimize("maxSegments", "1"));
     assertNumSegments(h.getCore(), 1);
-    // we've now forced a merge, and the MP ratio should be in play
-    assertCompoundSegments(h.getCore(), false);
+    // We've now forced a merge to a single segment. In Lucene 11 the compound-file decision for
+    // merged segments is made by the codec's CompoundFormat, not IndexWriterConfig.useCompoundFile.
+    // SolrIndexWriter bridges <useCompoundFile> onto the codec, so the merged segment honors it.
+    assertCompoundSegments(h.getCore(), expectCFS);
   }
 
   public void testNoMergePolicyFactoryConfig() throws Exception {

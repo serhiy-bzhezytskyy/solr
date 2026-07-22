@@ -66,6 +66,15 @@ public class SolrIndexConfig implements MapWriter {
 
   public final boolean useCompoundFile;
 
+  /**
+   * The maximum size (in megabytes) a merged segment may be and still use the compound file format;
+   * larger segments are written as non-compound even when {@link #useCompoundFile} is true. This is
+   * applied to the codec's {@link org.apache.lucene.codecs.CompoundFormat} and replaces the
+   * merge-policy {@code noCFSRatio} setting removed in Lucene 11. A value of {@code
+   * Double.POSITIVE_INFINITY} (the default) imposes no size limit.
+   */
+  public final double maxCFSSegmentSizeMB;
+
   public final int maxBufferedDocs;
 
   public final double ramBufferSizeMB;
@@ -99,6 +108,7 @@ public class SolrIndexConfig implements MapWriter {
   /** Internal constructor for setting defaults based on Lucene Version */
   private SolrIndexConfig() {
     useCompoundFile = false;
+    maxCFSSegmentSizeMB = Double.POSITIVE_INFINITY;
     maxBufferedDocs = -1;
     ramBufferSizeMB = 100;
     ramPerThreadHardLimitMB = -1;
@@ -151,6 +161,7 @@ public class SolrIndexConfig implements MapWriter {
         true);
 
     useCompoundFile = get("useCompoundFile").boolVal(def.useCompoundFile);
+    maxCFSSegmentSizeMB = get("maxCFSSegmentSizeMB").doubleVal(def.maxCFSSegmentSizeMB);
     maxBufferedDocs = get("maxBufferedDocs").intVal(def.maxBufferedDocs);
     ramBufferSizeMB = get("ramBufferSizeMB").doubleVal(def.ramBufferSizeMB);
     maxCommitMergeWaitMillis = get("maxCommitMergeWaitTime").intVal(def.maxCommitMergeWaitMillis);
@@ -198,6 +209,7 @@ public class SolrIndexConfig implements MapWriter {
   @Override
   public void writeMap(EntryWriter ew) throws IOException {
     ew.put("useCompoundFile", useCompoundFile)
+        .put("maxCFSSegmentSizeMB", maxCFSSegmentSizeMB)
         .put("maxBufferedDocs", maxBufferedDocs)
         .put("ramBufferSizeMB", ramBufferSizeMB)
         .put("ramPerThreadHardLimitMB", ramPerThreadHardLimitMB)
