@@ -1,0 +1,15 @@
+# See https://github.com/apache/solr/blob/main/dev-docs/changelog.adoc
+# PLACEHOLDER (experiment): replace SOLR-XXXX with the real JIRA before this is submitted upstream.
+# Created on the local lucene11-upgrade-experiment branch; not for upstream until Lucene 11 GA.
+title: >
+  Upgrade to Lucene 11. Some Lucene merge-policy settings were removed: `maxMergeAtOnce` and
+  `noCFSRatio` are no longer accepted and are ignored with a warning if left in a `mergePolicyFactory`
+  configuration. Compound-file selection is now controlled by the `<useCompoundFile>` and the new
+  `<maxCFSSegmentSizeMB>` `<indexConfig>` settings, which apply to both newly written and merged
+  segments.
+type: changed
+authors:
+  - name: Serhiy Bzhezytskyy
+links:
+  - name: SOLR-XXXX
+    url: https://issues.apache.org/jira/browse/SOLR-XXXX
