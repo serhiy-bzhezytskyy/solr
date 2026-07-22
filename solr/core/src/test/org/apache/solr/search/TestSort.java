@@ -397,19 +397,13 @@ public class TestSort extends SolrTestCaseJ4 {
 
   private static SortField getStringSortField(
       String fieldName, boolean reverse, boolean nullLast, boolean nullFirst) {
-    SortField sortField = new SortField(fieldName, SortField.Type.STRING, reverse);
-
     // 4 cases:
     // missingFirst / forward: default lucene behavior
     // missingFirst / reverse: set sortMissingLast
     // missingLast  / forward: set sortMissingLast
     // missingLast  / reverse: default lucene behavior
-
-    if (nullFirst && reverse) {
-      sortField.setMissingValue(SortField.STRING_LAST);
-    } else if (nullLast && !reverse) {
-      sortField.setMissingValue(SortField.STRING_LAST);
-    }
-    return sortField;
+    final Object missingValue =
+        ((nullFirst && reverse) || (nullLast && !reverse)) ? SortField.STRING_LAST : null;
+    return new SortField(fieldName, SortField.Type.STRING, reverse, missingValue);
   }
 }

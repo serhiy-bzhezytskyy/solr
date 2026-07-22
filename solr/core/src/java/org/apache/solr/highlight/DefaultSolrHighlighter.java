@@ -271,15 +271,11 @@ public class DefaultSolrHighlighter extends SolrHighlighter implements PluginInf
         request.getParams().getBool(HighlightParams.HIGHLIGHT_MULTI_TERM, true));
 
     boolean defaultPayloads = true; // overwritten below
-    try {
-      // It'd be nice to know if payloads are on the tokenStream but the presence of the attribute
-      // isn't a good indicator.
-      final Terms terms = request.getSearcher().getSlowAtomicReader().terms(fieldName);
-      if (terms != null) {
-        defaultPayloads = terms.hasPayloads();
-      }
-    } catch (IOException e) {
-      log.error("Couldn't check for existence of payloads", e);
+    // It'd be nice to know if payloads are on the tokenStream but the presence of the attribute
+    // isn't a good indicator.
+    final Terms terms = request.getSearcher().getSlowAtomicReader().terms(fieldName);
+    if (terms != null) {
+      defaultPayloads = terms.hasPayloads();
     }
     scorer.setUsePayloads(
         request.getParams().getFieldBool(fieldName, HighlightParams.PAYLOADS, defaultPayloads));

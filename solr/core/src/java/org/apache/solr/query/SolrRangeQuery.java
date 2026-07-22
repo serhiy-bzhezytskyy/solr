@@ -361,7 +361,7 @@ public final class SolrRangeQuery extends ExtendedQueryBase implements DocSetPro
     }
 
     @Override
-    public DocIdSetIterator iterator() throws IOException {
+    public DocIdSetIterator iterator() {
       return docs.iterator(ctx);
     }
   }

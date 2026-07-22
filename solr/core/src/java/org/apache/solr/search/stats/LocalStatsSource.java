@@ -18,8 +18,7 @@ package org.apache.solr.search.stats;
 
 import java.io.IOException;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.CollectionStatistics;
-import org.apache.lucene.search.TermStatistics;
+import org.apache.lucene.search.FieldStats;
 import org.apache.solr.search.SolrIndexSearcher;
 
 /** Convenience class that wraps a local {@link SolrIndexSearcher} to provide local statistics. */
@@ -31,7 +30,7 @@ public final class LocalStatsSource extends StatsSource {
   }
 
   @Override
-  public TermStatistics termStatistics(
+  public org.apache.lucene.search.TermStats termStatistics(
       SolrIndexSearcher localSearcher, Term term, int docFreq, long totalTermFreq)
       throws IOException {
     metrics.missingGlobalTermStats.increment();
@@ -39,7 +38,7 @@ public final class LocalStatsSource extends StatsSource {
   }
 
   @Override
-  public CollectionStatistics collectionStatistics(SolrIndexSearcher localSearcher, String field)
+  public FieldStats collectionStatistics(SolrIndexSearcher localSearcher, String field)
       throws IOException {
     metrics.missingGlobalFieldStats.increment();
     return localSearcher.localCollectionStatistics(field);

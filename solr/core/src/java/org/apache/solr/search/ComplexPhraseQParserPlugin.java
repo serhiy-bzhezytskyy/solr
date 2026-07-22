@@ -24,7 +24,6 @@ import org.apache.lucene.search.AutomatonQuery;
 import org.apache.lucene.search.MultiTermQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.WildcardQuery;
-import org.apache.lucene.util.automaton.Operations;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.NamedList;
@@ -82,10 +81,7 @@ public class ComplexPhraseQParserPlugin extends QParserPlugin {
         // For complex phrase queries, we need to ensure wildcard queries and automaton queries
         // use SCORING_BOOLEAN_REWRITE to avoid the new constant score wrappers in Lucene 10
         if (q instanceof WildcardQuery wq) {
-          return new WildcardQuery(
-              wq.getTerm(),
-              Operations.DEFAULT_DETERMINIZE_WORK_LIMIT,
-              MultiTermQuery.SCORING_BOOLEAN_REWRITE);
+          return new WildcardQuery(wq.getTerm(), MultiTermQuery.SCORING_BOOLEAN_REWRITE);
         } else if (q instanceof AutomatonQuery aq) {
           // For AutomatonQuery, we need to create a new one with the desired rewrite method
           // We can't access the term directly, but for reversed wildcard queries,
@@ -156,10 +152,7 @@ public class ComplexPhraseQParserPlugin extends QParserPlugin {
                 // In Lucene 10, we need to ensure wildcard queries use SCORING_BOOLEAN_REWRITE
                 // for complex phrase queries to work properly
                 if (wildcardQuery instanceof WildcardQuery wq) {
-                  return new WildcardQuery(
-                      wq.getTerm(),
-                      Operations.DEFAULT_DETERMINIZE_WORK_LIMIT,
-                      MultiTermQuery.SCORING_BOOLEAN_REWRITE);
+                  return new WildcardQuery(wq.getTerm(), MultiTermQuery.SCORING_BOOLEAN_REWRITE);
                 }
 
                 return wildcardQuery;

@@ -49,13 +49,7 @@ final class UnionDocIterator extends SweepDocIterator {
   UnionDocIterator(DocIterator[] subIterators, int baseIdx) throws IOException {
     super(subIterators.length);
     this.maxIdx = size - 1;
-    queue =
-        new PriorityQueue<>(size) {
-          @Override
-          protected boolean lessThan(SubIterStruct a, SubIterStruct b) {
-            return a.docId < b.docId;
-          }
-        };
+    queue = PriorityQueue.usingLessThan(size, (a, b) -> a.docId < b.docId);
     SubIterStruct tmpBase = null;
     int i = maxIdx;
     do {

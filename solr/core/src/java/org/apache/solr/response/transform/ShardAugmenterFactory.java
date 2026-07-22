@@ -77,7 +77,7 @@ public class ShardAugmenterFactory extends TransformerFactory {
         Style.getStyle(params.get("style", ""))
             .or(() -> configuredDefaultStyle)
             .orElse( // if not cnfigured at init, default Style driven by luceneMatchVersion
-                core.getSolrConfig().luceneMatchVersion.onOrAfter(Version.LUCENE_9_5_0)
+                core.getSolrConfig().luceneMatchVersion.onOrAfter(Version.LUCENE_10_0_0)
                     ? Style.ID
                     : Style.URLS);
 

@@ -358,7 +358,7 @@ public class TestDocSet extends SolrTestCase {
       }
 
       @Override
-      public DocValuesSkipper getDocValuesSkipper(String field) throws IOException {
+      public DocValuesSkipper getDocValuesSkipper(String field) {
         return null;
       }
 
@@ -439,13 +439,7 @@ public class TestDocSet extends SolrTestCase {
   }
 
   private static Supplier<DocIdSetIterator> disiSupplier(final DocIdSet docs) {
-    return () -> {
-      try {
-        return docs.iterator();
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    };
+    return docs::iterator;
   }
 
   @SafeVarargs
@@ -573,7 +567,7 @@ public class TestDocSet extends SolrTestCase {
    * Tests equivalence among {@link DocIdSetIterator} instances retrieved from {@link BitDocSet} and
    * {@link SortedIntDocSet} implementations, via {@link DocSet#makeQuery()} and directly via {@link
    * DocSet#iterator(LeafReaderContext)}. Also tests corresponding random-access {@link Bits}
-   * instances retrieved via {@link DocSet#makeQuery()}/ {@link DocIdSet#bits()}.
+   * instances retrieved via {@link DocSet#makeQuery()}.
    */
   public void doFilterTest(IndexReader reader) throws IOException {
     IndexReaderContext topLevelContext = reader.getContext();

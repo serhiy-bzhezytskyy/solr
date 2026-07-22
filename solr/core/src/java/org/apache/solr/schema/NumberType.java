@@ -33,7 +33,7 @@ public enum NumberType {
    * The effective value to use when sorting on this field should result in docs w/o a value sorting
    * "low" (which may be "first" or "last" depending on sort direction)
    *
-   * @see SortField#setMissingValue
+   * @see SortField#SortField(String, SortField.Type, boolean, Object)
    */
   public final Object sortMissingLow;
 
@@ -41,7 +41,7 @@ public enum NumberType {
    * The effective value to use when sorting on this field should result in docs w/o a value sorting
    * "low" (which may be "first" or "last" depending on sort direction)
    *
-   * @see SortField#setMissingValue
+   * @see SortField#SortField(String, SortField.Type, boolean, Object)
    */
   public final Object sortMissingHigh;
 

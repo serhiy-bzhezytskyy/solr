@@ -655,12 +655,7 @@ public class IndexSizeEstimator {
   public static class ItemPriorityQueue extends PriorityQueue<Item> implements MapWriter {
 
     public ItemPriorityQueue(int maxSize) {
-      super(maxSize);
-    }
-
-    @Override
-    protected boolean lessThan(Item a, Item b) {
-      return a.size < b.size;
+      super(maxSize, (a, b) -> a.size < b.size);
     }
 
     @Override

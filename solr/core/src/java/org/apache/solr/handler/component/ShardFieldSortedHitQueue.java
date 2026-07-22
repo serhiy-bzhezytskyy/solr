@@ -29,10 +29,25 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Pruning;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.util.PriorityQueue;
+import org.apache.lucene.util.PriorityQueue.LessThan;
 import org.apache.solr.common.SolrException;
 
 // used by distributed search to merge results.
 public class ShardFieldSortedHitQueue extends PriorityQueue<ShardDoc> {
+
+  /**
+   * Forwards {@link LessThan} calls to the enclosing queue. The comparison depends on per-instance
+   * comparator state that is only available after construction; the queue wires itself in once
+   * built, and the priority queue only invokes {@code lessThan} during later insert operations.
+   */
+  private static final class ShardLessThan implements LessThan<ShardDoc> {
+    private ShardFieldSortedHitQueue owner;
+
+    @Override
+    public boolean lessThan(ShardDoc docA, ShardDoc docB) {
+      return owner.lessThan(docA, docB);
+    }
+  }
 
   /** Stores a comparator corresponding to each field being sorted by */
   protected Comparator<ShardDoc>[] comparators;
@@ -52,7 +67,13 @@ public class ShardFieldSortedHitQueue extends PriorityQueue<ShardDoc> {
   }
 
   public ShardFieldSortedHitQueue(SortField[] fields, int size, IndexSearcher searcher) {
-    super(size);
+    this(fields, size, searcher, new ShardLessThan());
+  }
+
+  private ShardFieldSortedHitQueue(
+      SortField[] fields, int size, IndexSearcher searcher, ShardLessThan shardLessThan) {
+    super(size, shardLessThan);
+    shardLessThan.owner = this;
     final int n = fields.length;
     comparators = newArray(n);
     this.fields = new SortField[n];
@@ -78,7 +99,6 @@ public class ShardFieldSortedHitQueue extends PriorityQueue<ShardDoc> {
     }
   }
 
-  @Override
   protected boolean lessThan(ShardDoc docA, ShardDoc docB) {
     // If these docs are from the same shard, then the relative order
     // is how they appeared in the response from that shard.

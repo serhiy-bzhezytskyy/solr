@@ -160,13 +160,10 @@ public class TestFieldCacheSortRandom extends SolrTestCase {
       final SortField sf;
       final boolean sortMissingLast;
       final boolean missingIsNull;
-      sf = new SortField("stringdv", type, reverse);
       sortMissingLast = random().nextBoolean();
       missingIsNull = true;
 
-      if (sortMissingLast) {
-        sf.setMissingValue(SortField.STRING_LAST);
-      }
+      sf = new SortField("stringdv", type, reverse, sortMissingLast ? SortField.STRING_LAST : null);
 
       final Sort sort;
       if (random.nextBoolean()) {

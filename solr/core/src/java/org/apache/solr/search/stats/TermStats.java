@@ -17,9 +17,11 @@
 package org.apache.solr.search.stats;
 
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.TermStatistics;
 
-/** Modifiable version of {@link TermStatistics} useful for aggregation of per-shard stats. */
+/**
+ * Modifiable version of {@link org.apache.lucene.search.TermStats} useful for aggregation of
+ * per-shard stats.
+ */
 public class TermStats {
   public final String term;
   public long docFreq;
@@ -45,7 +47,7 @@ public class TermStats {
     this.totalTermFreq = totalTermFreq;
   }
 
-  public TermStats(String field, TermStatistics stats) {
+  public TermStats(String field, org.apache.lucene.search.TermStats stats) {
     this.term = field + ":" + stats.term().utf8ToString();
     this.t = new Term(field, stats.term());
     this.docFreq = stats.docFreq();
@@ -57,11 +59,11 @@ public class TermStats {
     this.totalTermFreq += stats.totalTermFreq;
   }
 
-  public TermStatistics toTermStatistics() {
+  public org.apache.lucene.search.TermStats toTermStatistics() {
     if (docFreq == 0) {
       return null;
     }
-    return new TermStatistics(t.bytes(), docFreq, totalTermFreq);
+    return new org.apache.lucene.search.TermStats(t.bytes(), docFreq, totalTermFreq);
   }
 
   @Override

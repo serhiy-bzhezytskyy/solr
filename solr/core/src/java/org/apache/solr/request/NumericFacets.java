@@ -271,24 +271,10 @@ final class NumericFacets {
     if (FacetParams.FACET_SORT_COUNT.equals(sort)
         || FacetParams.FACET_SORT_COUNT_LEGACY.equals(sort)) {
       pq =
-          new PriorityQueue<>(pqSize) {
-            @Override
-            protected boolean lessThan(Entry a, Entry b) {
-              if (a.count < b.count || (a.count == b.count && a.bits > b.bits)) {
-                return true;
-              } else {
-                return false;
-              }
-            }
-          };
+          PriorityQueue.usingLessThan(
+              pqSize, (a, b) -> a.count < b.count || (a.count == b.count && a.bits > b.bits));
     } else {
-      pq =
-          new PriorityQueue<>(pqSize) {
-            @Override
-            protected boolean lessThan(Entry a, Entry b) {
-              return a.bits > b.bits;
-            }
-          };
+      pq = PriorityQueue.usingLessThan(pqSize, (a, b) -> a.bits > b.bits);
     }
     Entry e = null;
     for (int i = 0; i < hashTable.bits.length; ++i) {
@@ -516,25 +502,11 @@ final class NumericFacets {
     if (FacetParams.FACET_SORT_COUNT.equals(sort)
         || FacetParams.FACET_SORT_COUNT_LEGACY.equals(sort)) {
       pq =
-          new PriorityQueue<>(pqSize) {
-            @Override
-            protected boolean lessThan(Entry a, Entry b) {
-              if (a.count < b.count || (a.count == b.count && a.bits > b.bits)) {
-                return true;
-              } else {
-                return false;
-              }
-            }
-          };
+          PriorityQueue.usingLessThan(
+              pqSize, (a, b) -> a.count < b.count || (a.count == b.count && a.bits > b.bits));
     } else {
       // sort=index
-      pq =
-          new PriorityQueue<>(pqSize) {
-            @Override
-            protected boolean lessThan(Entry a, Entry b) {
-              return a.bits > b.bits;
-            }
-          };
+      pq = PriorityQueue.usingLessThan(pqSize, (a, b) -> a.bits > b.bits);
     }
     Entry e = null;
     for (int i = 0; i < hashTable.bits.length; ++i) {

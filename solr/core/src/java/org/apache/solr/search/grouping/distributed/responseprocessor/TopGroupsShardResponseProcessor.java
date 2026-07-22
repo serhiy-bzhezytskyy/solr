@@ -18,7 +18,6 @@ package org.apache.solr.search.grouping.distributed.responseprocessor;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -163,8 +162,6 @@ public class TopGroupsShardResponseProcessor implements ShardResponseProcessor {
         continue;
       }
 
-      TopGroups<BytesRef>[] topGroupsArr =
-          (TopGroups<BytesRef>[]) Array.newInstance(TopGroups.class, topGroups.size());
       int docsPerGroup = docsPerGroupDefault;
       if (docsPerGroup < 0) {
         docsPerGroup = 0;
@@ -175,7 +172,7 @@ public class TopGroupsShardResponseProcessor implements ShardResponseProcessor {
       rb.mergedTopGroups.put(
           entry.getKey(),
           TopGroups.merge(
-              topGroups.toArray(topGroupsArr),
+              topGroups,
               groupSort,
               withinGroupSort,
               groupOffsetDefault,

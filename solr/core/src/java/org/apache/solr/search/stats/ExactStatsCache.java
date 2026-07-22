@@ -27,12 +27,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.CollectionStatistics;
+import org.apache.lucene.search.FieldStats;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreMode;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TermStatistics;
 import org.apache.solr.client.solrj.SolrResponse;
 import org.apache.solr.cloud.CloudDescriptor;
 import org.apache.solr.common.SolrException;
@@ -187,8 +186,8 @@ public class ExactStatsCache extends StatsCache {
       IndexSearcher statsCollectingSearcher =
           new IndexSearcher(searcher.getIndexReader()) {
             @Override
-            public CollectionStatistics collectionStatistics(String field) throws IOException {
-              CollectionStatistics cs = super.collectionStatistics(field);
+            public FieldStats fieldStats(String field) throws IOException {
+              FieldStats cs = super.fieldStats(field);
               if (cs != null) {
                 colMap.put(field, new CollectionStats(cs));
               }
@@ -196,9 +195,9 @@ public class ExactStatsCache extends StatsCache {
             }
 
             @Override
-            public TermStatistics termStatistics(Term term, int docFreq, long totalTermFreq)
-                throws IOException {
-              TermStatistics ts = super.termStatistics(term, docFreq, totalTermFreq);
+            public org.apache.lucene.search.TermStats termStats(
+                Term term, int docFreq, long totalTermFreq) throws IOException {
+              org.apache.lucene.search.TermStats ts = super.termStats(term, docFreq, totalTermFreq);
               terms.add(term);
               statsMap.put(term.toString(), new TermStats(term.field(), ts));
               return ts;
@@ -209,7 +208,7 @@ public class ExactStatsCache extends StatsCache {
         if (colMap.containsKey(field)) {
           continue;
         }
-        statsCollectingSearcher.collectionStatistics(field);
+        statsCollectingSearcher.fieldStats(field);
       }
       for (Term term : additionalTerms) {
         statsCollectingSearcher.createWeight(
@@ -382,7 +381,7 @@ public class ExactStatsCache extends StatsCache {
     }
 
     @Override
-    public TermStatistics termStatistics(
+    public org.apache.lucene.search.TermStats termStatistics(
         SolrIndexSearcher localSearcher, Term term, int docFreq, long totalTermFreq)
         throws IOException {
       TermStats termStats = termStatsCache.get(term.toString());
@@ -401,7 +400,7 @@ public class ExactStatsCache extends StatsCache {
     }
 
     @Override
-    public CollectionStatistics collectionStatistics(SolrIndexSearcher localSearcher, String field)
+    public FieldStats collectionStatistics(SolrIndexSearcher localSearcher, String field)
         throws IOException {
       CollectionStats colStats = colStatsCache.get(field);
       if (colStats == null) {

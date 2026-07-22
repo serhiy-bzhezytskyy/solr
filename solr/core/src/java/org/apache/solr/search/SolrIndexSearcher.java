@@ -53,11 +53,11 @@ import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.CollectionStatistics;
 import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.FieldDoc;
+import org.apache.lucene.search.FieldStats;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.LeafCollector;
 import org.apache.lucene.search.MatchAllDocsQuery;
@@ -71,7 +71,7 @@ import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.SortField.Type;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TermStatistics;
+import org.apache.lucene.search.TermStats;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TopDocsCollector;
 import org.apache.lucene.search.TopFieldCollector;
@@ -512,8 +512,7 @@ public class SolrIndexSearcher extends IndexSearcher implements Closeable, SolrI
    * Override these two methods to provide a way to use global collection stats.
    */
   @Override
-  public TermStatistics termStatistics(Term term, int docFreq, long totalTermFreq)
-      throws IOException {
+  public TermStats termStats(Term term, int docFreq, long totalTermFreq) throws IOException {
     final SolrRequestInfo reqInfo = SolrRequestInfo.getRequestInfo();
     if (reqInfo != null) {
       final StatsSource statsSrc = (StatsSource) reqInfo.getReq().getContext().get(STATS_SOURCE);
@@ -525,7 +524,7 @@ public class SolrIndexSearcher extends IndexSearcher implements Closeable, SolrI
   }
 
   @Override
-  public CollectionStatistics collectionStatistics(String field) throws IOException {
+  public FieldStats fieldStats(String field) throws IOException {
     final SolrRequestInfo reqInfo = SolrRequestInfo.getRequestInfo();
     if (reqInfo != null) {
       final StatsSource statsSrc = (StatsSource) reqInfo.getReq().getContext().get(STATS_SOURCE);
@@ -536,13 +535,13 @@ public class SolrIndexSearcher extends IndexSearcher implements Closeable, SolrI
     return localCollectionStatistics(field);
   }
 
-  public TermStatistics localTermStatistics(Term term, int docFreq, long totalTermFreq)
+  public TermStats localTermStatistics(Term term, int docFreq, long totalTermFreq)
       throws IOException {
-    return super.termStatistics(term, docFreq, totalTermFreq);
+    return super.termStats(term, docFreq, totalTermFreq);
   }
 
-  public CollectionStatistics localCollectionStatistics(String field) throws IOException {
-    return super.collectionStatistics(field);
+  public FieldStats localCollectionStatistics(String field) throws IOException {
+    return super.fieldStats(field);
   }
 
   public boolean isCachingEnabled() {

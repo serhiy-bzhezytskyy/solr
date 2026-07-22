@@ -94,7 +94,7 @@ public class ICUCollationField extends FieldType {
 
   // ICUCollation keys are not even necessarily valid UTF-8, so udvas is pathological. See
   // SOLR-15777
-  static final Version UDVAS_FORBIDDEN_AS_OF = Version.LUCENE_9_0_0;
+  static final Version UDVAS_FORBIDDEN_AS_OF = Version.LUCENE_10_0_0;
   static final String UDVAS_MESSAGE =
       "useDocValuesAsStored is forbidden for "
           + ICUCollationField.class

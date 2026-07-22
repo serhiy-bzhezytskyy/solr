@@ -603,7 +603,6 @@ public abstract class SolrQueryParserBase extends QueryBuilder {
         RegExp.ALL,
         0,
         RegexpQuery.DEFAULT_PROVIDER,
-        Operations.DEFAULT_DETERMINIZE_WORK_LIMIT,
         sf.getType().getRewriteMethod(parser, sf));
   }
 
@@ -685,8 +684,7 @@ public abstract class SolrQueryParserBase extends QueryBuilder {
    */
   protected Query newWildcardQuery(Term t) {
     SchemaField sf = schema.getField(t.field());
-    return new WildcardQuery(
-        t, Operations.DEFAULT_DETERMINIZE_WORK_LIMIT, sf.getType().getRewriteMethod(parser, sf));
+    return new WildcardQuery(t, sf.getType().getRewriteMethod(parser, sf));
   }
 
   /**
@@ -1292,18 +1290,18 @@ public abstract class SolrQueryParserBase extends QueryBuilder {
     if (factory != null) {
       Term term = new Term(field, termStr);
       // fsa representing the query
-      Automaton automaton =
-          WildcardQuery.toAutomaton(term, Operations.DEFAULT_DETERMINIZE_WORK_LIMIT);
+      Automaton automaton = WildcardQuery.toAutomaton(term);
       // TODO: we should likely use the automaton to calculate shouldReverse, too.
       if (factory.shouldReverse(termStr)) {
-        automaton = Operations.concatenate(automaton, Automata.makeChar(factory.getMarkerChar()));
+        automaton =
+            Operations.concatenate(List.of(automaton, Automata.makeChar(factory.getMarkerChar())));
         automaton = Operations.reverse(automaton);
       } else {
         // reverse wildcardfilter is active: remove false positives
         // fsa representing false positives (markerChar*)
         Automaton falsePositives =
             Operations.concatenate(
-                Automata.makeChar(factory.getMarkerChar()), Automata.makeAnyString());
+                List.of(Automata.makeChar(factory.getMarkerChar()), Automata.makeAnyString()));
         // subtract these away
         automaton =
             Operations.minus(automaton, falsePositives, Operations.DEFAULT_DETERMINIZE_WORK_LIMIT);

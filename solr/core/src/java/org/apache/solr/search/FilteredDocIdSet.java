@@ -16,13 +16,11 @@
  */
 package org.apache.solr.search;
 
-import java.io.IOException;
 import java.util.Collection;
 import org.apache.lucene.search.DocIdSet;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.FilteredDocIdSetIterator;
 import org.apache.lucene.util.Accountable;
-import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.RamUsageEstimator;
 
 /**
@@ -64,24 +62,6 @@ public abstract class FilteredDocIdSet extends DocIdSet {
     return _innerSet.getChildResources();
   }
 
-  @Override
-  public Bits bits() throws IOException {
-    final Bits bits = _innerSet.bits();
-    return (bits == null)
-        ? null
-        : new Bits() {
-          @Override
-          public boolean get(int docid) {
-            return bits.get(docid) && FilteredDocIdSet.this.match(docid);
-          }
-
-          @Override
-          public int length() {
-            return bits.length();
-          }
-        };
-  }
-
   /**
    * Validation method to determine whether a docid should be in the result set.
    *
@@ -97,7 +77,7 @@ public abstract class FilteredDocIdSet extends DocIdSet {
    * @see FilteredDocIdSetIterator
    */
   @Override
-  public DocIdSetIterator iterator() throws IOException {
+  public DocIdSetIterator iterator() {
     final DocIdSetIterator iterator = _innerSet.iterator();
     if (iterator == null) {
       return null;

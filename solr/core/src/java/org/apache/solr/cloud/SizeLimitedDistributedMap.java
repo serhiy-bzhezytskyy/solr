@@ -70,12 +70,7 @@ public class SizeLimitedDistributedMap extends DistributedMap {
       int cleanupSize = maxSize / 10;
 
       final PriorityQueue<Long> priorityQueue =
-          new PriorityQueue<>(cleanupSize) {
-            @Override
-            protected boolean lessThan(Long a, Long b) {
-              return (a > b);
-            }
-          };
+          PriorityQueue.usingLessThan(cleanupSize, (a, b) -> (a > b));
 
       Map<String, Long> childToModificationZxid = CollectionUtil.newHashMap(children.size());
       for (String child : children) {

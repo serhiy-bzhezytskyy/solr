@@ -32,12 +32,12 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-import org.apache.lucene.search.suggest.Lookup;
 import org.apache.lucene.search.suggest.Lookup.LookupResult;
 import org.apache.lucene.util.Accountable;
 import org.apache.lucene.util.Accountables;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.CharsRef;
+import org.apache.lucene.util.PriorityQueue;
 import org.apache.solr.common.SolrException;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
@@ -359,7 +359,8 @@ public class SuggestComponent extends SearchComponent
     // Get Top N for every token in every shard (using weights)
     for (String suggesterName : suggesterNames) {
       for (String token : allTokens) {
-        Lookup.LookupPriorityQueue resultQueue = new Lookup.LookupPriorityQueue(count);
+        PriorityQueue<LookupResult> resultQueue =
+            PriorityQueue.usingLessThan(count, (a, b) -> a.value < b.value);
         for (SuggesterResult shardResult : suggesterResults) {
           List<LookupResult> suggests = shardResult.getLookupResult(suggesterName, token);
           if (suggests == null) {
@@ -369,8 +370,14 @@ public class SuggestComponent extends SearchComponent
             resultQueue.insertWithOverflow(res);
           }
         }
+        // drain the min-heap into descending-by-weight order
+        int size = resultQueue.size();
+        LookupResult[] sorted = new LookupResult[size];
+        for (int i = size - 1; i >= 0; i--) {
+          sorted[i] = resultQueue.pop();
+        }
         List<LookupResult> sortedSuggests = new ArrayList<>();
-        Collections.addAll(sortedSuggests, resultQueue.getResults());
+        Collections.addAll(sortedSuggests, sorted);
         result.add(suggesterName, token, sortedSuggests);
       }
     }

@@ -26,11 +26,10 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.CollectionStatistics;
+import org.apache.lucene.search.FieldStats;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreMode;
-import org.apache.lucene.search.TermStatistics;
 import org.apache.lucene.search.Weight;
 import org.apache.solr.core.PluginInfo;
 import org.apache.solr.core.SolrInfoBean;
@@ -286,22 +285,22 @@ public abstract class StatsCache implements PluginInfoInitialized, SolrInfoBean 
     }
 
     @Override
-    public TermStatistics termStatistics(Term term, int docFreq, long totalTermFreq)
+    public org.apache.lucene.search.TermStats termStats(Term term, int docFreq, long totalTermFreq)
         throws IOException {
       if (statsSource.termStatistics(null, term, docFreq, totalTermFreq) == null) {
         missingTermStats.accept(term);
         missingTermsCount++;
       }
-      return super.termStatistics(term, docFreq, totalTermFreq);
+      return super.termStats(term, docFreq, totalTermFreq);
     }
 
     @Override
-    public CollectionStatistics collectionStatistics(String field) throws IOException {
+    public FieldStats fieldStats(String field) throws IOException {
       if (statsSource.collectionStatistics(null, field) == null) {
         missingFieldStats.accept(field);
         missingFieldsCount++;
       }
-      return super.collectionStatistics(field);
+      return super.fieldStats(field);
     }
   }
 

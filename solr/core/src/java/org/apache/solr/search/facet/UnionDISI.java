@@ -50,13 +50,7 @@ final class UnionDISI extends SweepDISI {
       throws IOException {
     super(size, countAccs);
     this.maxIdx = size - 1;
-    queue =
-        new PriorityQueue<>(size) {
-          @Override
-          protected boolean lessThan(SubIterStruct a, SubIterStruct b) {
-            return a.docId < b.docId;
-          }
-        };
+    queue = PriorityQueue.usingLessThan(size, (a, b) -> a.docId < b.docId);
     int i = maxIdx;
     SubIterStruct tmpBaseSub = null;
     do {

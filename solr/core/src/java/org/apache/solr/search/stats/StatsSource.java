@@ -18,23 +18,22 @@ package org.apache.solr.search.stats;
 
 import java.io.IOException;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.CollectionStatistics;
+import org.apache.lucene.search.FieldStats;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermStatistics;
 import org.apache.lucene.search.Weight;
 import org.apache.solr.search.SolrIndexSearcher;
 
 /**
  * The purpose of this class is only to provide two pieces of information necessary to create {@link
- * Weight} from a {@link Query}, that is {@link TermStatistics} for a term and {@link
- * CollectionStatistics} for the whole collection.
+ * Weight} from a {@link Query}, that is {@link org.apache.lucene.search.TermStats} for a term and
+ * {@link FieldStats} for the whole collection.
  */
 public abstract class StatsSource {
 
-  public abstract TermStatistics termStatistics(
+  public abstract org.apache.lucene.search.TermStats termStatistics(
       SolrIndexSearcher localSearcher, Term term, int docFreq, long totalTermFreq)
       throws IOException;
 
-  public abstract CollectionStatistics collectionStatistics(
-      SolrIndexSearcher localSearcher, String field) throws IOException;
+  public abstract FieldStats collectionStatistics(SolrIndexSearcher localSearcher, String field)
+      throws IOException;
 }

@@ -132,12 +132,7 @@ public class PointMerger {
 
   static class PQueue extends PriorityQueue<BaseSeg> {
     public PQueue(int maxSize) {
-      super(maxSize);
-    }
-
-    @Override
-    protected boolean lessThan(BaseSeg a, BaseSeg b) {
-      return BaseSeg.lessThan(a, b);
+      super(maxSize, BaseSeg::lessThan);
     }
   }
 

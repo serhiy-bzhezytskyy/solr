@@ -25,8 +25,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.LongAdder;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.CollectionStatistics;
-import org.apache.lucene.search.TermStatistics;
+import org.apache.lucene.search.FieldStats;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.core.PluginInfo;
 import org.apache.solr.handler.component.ResponseBuilder;
@@ -241,7 +240,7 @@ public class LRUStatsCache extends ExactStatsCache {
     }
 
     @Override
-    public TermStatistics termStatistics(
+    public org.apache.lucene.search.TermStats termStatistics(
         SolrIndexSearcher localSearcher, Term term, int docFreq, long totalTermFreq)
         throws IOException {
       TermStats termStats = currentGlobalTermStats.get(term.toString());
@@ -258,7 +257,7 @@ public class LRUStatsCache extends ExactStatsCache {
     }
 
     @Override
-    public CollectionStatistics collectionStatistics(SolrIndexSearcher localSearcher, String field)
+    public FieldStats collectionStatistics(SolrIndexSearcher localSearcher, String field)
         throws IOException {
       CollectionStats colStats = currentGlobalColStats.get(field);
       if (colStats == null) {

@@ -272,8 +272,7 @@ public class TestFieldCacheSort extends SolrTestCase {
     writer.close();
 
     IndexSearcher searcher = newSearcher(ir);
-    SortField sf = new SortField("value", sortType);
-    sf.setMissingValue(SortField.STRING_LAST);
+    SortField sf = new SortField("value", sortType, false, SortField.STRING_LAST);
     Sort sort = new Sort(sf);
 
     TopDocs td = searcher.search(new MatchAllDocsQuery(), 10, sort);
@@ -312,8 +311,7 @@ public class TestFieldCacheSort extends SolrTestCase {
     writer.close();
 
     IndexSearcher searcher = newSearcher(ir);
-    SortField sf = new SortField("value", sortType, true);
-    sf.setMissingValue(SortField.STRING_LAST);
+    SortField sf = new SortField("value", sortType, true, SortField.STRING_LAST);
     Sort sort = new Sort(sf);
 
     TopDocs td = searcher.search(new MatchAllDocsQuery(), 10, sort);
@@ -527,8 +525,7 @@ public class TestFieldCacheSort extends SolrTestCase {
     writer.close();
 
     IndexSearcher searcher = newSearcher(ir, false);
-    SortField sortField = new SortField("value", SortField.Type.INT);
-    sortField.setMissingValue(Integer.MAX_VALUE);
+    SortField sortField = new SortField("value", SortField.Type.INT, false, Integer.MAX_VALUE);
     Sort sort = new Sort(sortField);
 
     TopDocs td = searcher.search(new MatchAllDocsQuery(), 10, sort);
@@ -657,8 +654,7 @@ public class TestFieldCacheSort extends SolrTestCase {
     writer.close();
 
     IndexSearcher searcher = newSearcher(ir);
-    SortField sortField = new SortField("value", SortField.Type.INT);
-    sortField.setMissingValue(Integer.MAX_VALUE);
+    SortField sortField = new SortField("value", SortField.Type.INT, false, Integer.MAX_VALUE);
     Sort sort = new Sort(sortField);
 
     TopDocs td = searcher.search(new MatchAllDocsQuery(), 10, sort);
@@ -787,8 +783,7 @@ public class TestFieldCacheSort extends SolrTestCase {
     writer.close();
 
     IndexSearcher searcher = newSearcher(ir, false);
-    SortField sortField = new SortField("value", SortField.Type.LONG);
-    sortField.setMissingValue(Long.MAX_VALUE);
+    SortField sortField = new SortField("value", SortField.Type.LONG, false, Long.MAX_VALUE);
     Sort sort = new Sort(sortField);
 
     TopDocs td = searcher.search(new MatchAllDocsQuery(), 10, sort);
@@ -913,8 +908,7 @@ public class TestFieldCacheSort extends SolrTestCase {
     writer.close();
 
     IndexSearcher searcher = newSearcher(ir);
-    SortField sortField = new SortField("value", SortField.Type.LONG);
-    sortField.setMissingValue(Long.MAX_VALUE);
+    SortField sortField = new SortField("value", SortField.Type.LONG, false, Long.MAX_VALUE);
     Sort sort = new Sort(sortField);
 
     TopDocs td = searcher.search(new MatchAllDocsQuery(), 10, sort);
@@ -1042,8 +1036,7 @@ public class TestFieldCacheSort extends SolrTestCase {
     writer.close();
 
     IndexSearcher searcher = newSearcher(ir, false);
-    SortField sortField = new SortField("value", SortField.Type.FLOAT);
-    sortField.setMissingValue(Float.MAX_VALUE);
+    SortField sortField = new SortField("value", SortField.Type.FLOAT, false, Float.MAX_VALUE);
     Sort sort = new Sort(sortField);
 
     TopDocs td = searcher.search(new MatchAllDocsQuery(), 10, sort);
@@ -1168,8 +1161,7 @@ public class TestFieldCacheSort extends SolrTestCase {
     writer.close();
 
     IndexSearcher searcher = newSearcher(ir);
-    SortField sortField = new SortField("value", SortField.Type.FLOAT);
-    sortField.setMissingValue(Float.MAX_VALUE);
+    SortField sortField = new SortField("value", SortField.Type.FLOAT, false, Float.MAX_VALUE);
     Sort sort = new Sort(sortField);
 
     TopDocs td = searcher.search(new MatchAllDocsQuery(), 10, sort);
@@ -1362,8 +1354,7 @@ public class TestFieldCacheSort extends SolrTestCase {
     writer.close();
 
     IndexSearcher searcher = newSearcher(ir, false);
-    SortField sortField = new SortField("value", SortField.Type.DOUBLE);
-    sortField.setMissingValue(Double.MAX_VALUE);
+    SortField sortField = new SortField("value", SortField.Type.DOUBLE, false, Double.MAX_VALUE);
     Sort sort = new Sort(sortField);
 
     TopDocs td = searcher.search(new MatchAllDocsQuery(), 10, sort);
@@ -1561,8 +1552,7 @@ public class TestFieldCacheSort extends SolrTestCase {
     writer.close();
 
     IndexSearcher searcher = newSearcher(ir);
-    SortField sortField = new SortField("value", SortField.Type.DOUBLE);
-    sortField.setMissingValue(Double.MAX_VALUE);
+    SortField sortField = new SortField("value", SortField.Type.DOUBLE, false, Double.MAX_VALUE);
     Sort sort = new Sort(sortField);
 
     TopDocs td = searcher.search(new MatchAllDocsQuery(), 10, sort);

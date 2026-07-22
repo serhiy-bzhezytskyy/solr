@@ -394,12 +394,7 @@ abstract class FacetFieldProcessor extends FacetProcessor<FacetField> {
           };
     }
     final PriorityQueue<Slot> queue =
-        new PriorityQueue<>(maxTopVals) {
-          @Override
-          protected boolean lessThan(Slot a, Slot b) {
-            return orderPredicate.test(a, b);
-          }
-        };
+        PriorityQueue.usingLessThan(maxTopVals, (a, b) -> orderPredicate.test(a, b));
 
     // note: We avoid object allocation by having a Slot and re-using the 'bottom'.
     Slot bottom = null;

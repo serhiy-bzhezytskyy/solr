@@ -1259,13 +1259,8 @@ public class LukeRequestHandler extends RequestHandlerBase implements SolrCoreAw
     public TermHistogram histogram;
 
     TopTermQueue(int size) {
-      super(size);
+      super(size, (a, b) -> a.docFreq < b.docFreq);
       histogram = new TermHistogram();
-    }
-
-    @Override
-    protected final boolean lessThan(TermInfo a, TermInfo b) {
-      return a.docFreq < b.docFreq;
     }
 
     /** This is a destructive call... the queue is empty at the end */

@@ -17,6 +17,7 @@
 package org.apache.solr.index;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -95,7 +96,6 @@ public final class SlowCompositeReaderWrapper extends LeafReader {
 
   SlowCompositeReaderWrapper(CompositeReader reader) throws IOException {
     in = reader;
-    in.registerParentReader(this);
     if (reader.leaves().isEmpty()) {
       metaData = new LeafMetaData(Version.LATEST.major, Version.LATEST, null, false);
     } else {
@@ -121,7 +121,7 @@ public final class SlowCompositeReaderWrapper extends LeafReader {
   }
 
   @Override
-  public DocValuesSkipper getDocValuesSkipper(String field) throws IOException {
+  public DocValuesSkipper getDocValuesSkipper(String field) {
     // TODO implement skipping
     return null;
   }
@@ -145,9 +145,13 @@ public final class SlowCompositeReaderWrapper extends LeafReader {
   }
 
   @Override
-  public Terms terms(String field) throws IOException {
+  public Terms terms(String field) {
     ensureOpen();
-    return MultiTerms.getTerms(in, field);
+    try {
+      return MultiTerms.getTerms(in, field);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
   }
 
   @Override

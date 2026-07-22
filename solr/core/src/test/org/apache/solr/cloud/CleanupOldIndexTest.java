@@ -45,8 +45,9 @@ public class CleanupOldIndexTest extends SolrCloudTestCase {
 
   @AfterClass
   public static void afterClass() throws Exception {
-
-    if (null != cluster && suiteFailureMarker.wasSuccessful()) {
+    // Lucene 11's JUnit5-migrated test framework no longer exposes suite-success state to external
+    // subclasses; print the layout whenever the cluster was set up.
+    if (null != cluster) {
       zkClient().printLayoutToStream(System.out);
     }
   }

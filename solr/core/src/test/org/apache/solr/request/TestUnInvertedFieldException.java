@@ -95,7 +95,7 @@ public class TestUnInvertedFieldException extends SolrTestCaseJ4 {
 
     try {
       TestInjection.uifOutOfMemoryError = true;
-      if (assertsAreEnabled) { // if they aren't, we check that injection is disabled in live
+      if (TEST_ASSERTS_ENABLED) { // if they aren't, we check that injection is disabled in live
         List<Future<UnInvertedField>> futures =
             initCallables.stream().map((c) -> pool.submit(c)).collect(Collectors.toList());
         for (Future<UnInvertedField> uifuture : futures) {
