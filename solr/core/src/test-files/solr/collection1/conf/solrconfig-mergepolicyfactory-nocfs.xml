@@ -25,6 +25,9 @@
   <indexConfig>
     <useCompoundFile>${testSetNoCFSMergePolicyConfig.useCompoundFile:false}</useCompoundFile>
     <mergePolicyFactory class="org.apache.solr.index.TieredMergePolicyFactory">
+      <!-- noCFSRatio was removed in Lucene 11 (compound-file selection moved to the codec); kept
+           here to verify a legacy config is tolerated. Compound-file use is driven by
+           <useCompoundFile> above. -->
       <double name="noCFSRatio">0.5</double>
     </mergePolicyFactory>
   </indexConfig>

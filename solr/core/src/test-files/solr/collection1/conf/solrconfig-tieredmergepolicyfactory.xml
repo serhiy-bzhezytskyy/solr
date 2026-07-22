@@ -24,8 +24,10 @@
 
   <indexConfig>
     <useCompoundFile>${useCompoundFile:false}</useCompoundFile>
+    <maxCFSSegmentSizeMB>123.0</maxCFSSegmentSizeMB>
     <mergePolicyFactory class="org.apache.solr.index.TieredMergePolicyFactory">
-      <int name="maxMergeAtOnce">19</int>
+      <!-- maxMergeAtOnce and noCFSRatio were removed in Lucene 11; kept here to verify that a
+           legacy configuration is tolerated (ignored with a warning) rather than failing. -->
       <int name="maxMergeAtOnce">7</int>
       <int name="segmentsPerTier">9</int>
       <int name="targetSearchConcurrency">1</int>

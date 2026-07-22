@@ -45,13 +45,13 @@ public class WrapperMergePolicyFactoryTest extends SolrTestCaseJ4 {
 
   public void testProperlyInitializesWrappedMergePolicy() {
     final TieredMergePolicy defaultTMP = new TieredMergePolicy();
-    final int testMaxMergeAtOnce = defaultTMP.getMaxMergeAtOnce() * 2;
+    final double testSegmentsPerTier = defaultTMP.getSegmentsPerTier() * 2;
     final double testMaxMergedSegmentMB = defaultTMP.getMaxMergedSegmentMB() * 10;
 
     final MergePolicyFactoryArgs args = new MergePolicyFactoryArgs();
     args.add(WrapperMergePolicyFactory.WRAPPED_PREFIX, "test");
     args.add("test.class", TieredMergePolicyFactory.class.getName());
-    args.add("test.maxMergeAtOnce", testMaxMergeAtOnce);
+    args.add("test.segmentsPerTier", testSegmentsPerTier);
     args.add("test.maxMergedSegmentMB", testMaxMergedSegmentMB);
     MergePolicyFactory mpf =
         new DefaultingWrapperMergePolicyFactory(resourceLoader, args, null) {
@@ -63,62 +63,49 @@ public class WrapperMergePolicyFactoryTest extends SolrTestCaseJ4 {
     final MergePolicy mp = mpf.getMergePolicy();
     assertSame(mp.getClass(), TieredMergePolicy.class);
     final TieredMergePolicy tmp = (TieredMergePolicy) mp;
-    assertEquals("maxMergeAtOnce", testMaxMergeAtOnce, tmp.getMaxMergeAtOnce());
+    assertEquals("segmentsPerTier", testSegmentsPerTier, tmp.getSegmentsPerTier(), 0.0d);
     assertEquals("maxMergedSegmentMB", testMaxMergedSegmentMB, tmp.getMaxMergedSegmentMB(), 0.0d);
   }
 
   public void testUpgradeIndexMergePolicyFactory() {
     final int N = 10;
-    final Double wrappingNoCFSRatio =
-        random().nextBoolean()
-            ? null
-            : random().nextInt(N + 1) / ((double) N); // must be: 0.0 <= value <= 1.0
-    final Double wrappedNoCFSRatio =
-        random().nextBoolean()
-            ? null
-            : random().nextInt(N + 1) / ((double) N); // must be: 0.0 <= value <= 1.0
-    implTestUpgradeIndexMergePolicyFactory(wrappingNoCFSRatio, wrappedNoCFSRatio);
-  }
+    // NOTE (Lucene 11): the wrapping policy is UpgradeIndexMergePolicy, which no longer exposes any
+    // bean setters, so a wrapping-side arg can no longer be applied (invokeSetters would throw).
+    // We therefore only vary the WRAPPED policy's arg (maxMergedSegmentMB, a surviving
+    // TieredMergePolicy setter that stands in for the removed noCFSRatio). The wrapping-vs-wrapped
+    // overlap detection is still covered by testUpgradeIndexMergePolicyFactoryOverlap below.
+    final Double wrappedMaxMergedSegmentMB =
+        random().nextBoolean() ? null : (double) random().nextInt(N + 1);
 
-  private void implTestUpgradeIndexMergePolicyFactory(
-      Double wrappingNoCFSRatio, Double wrappedNoCFSRatio) {
     final MergePolicyFactoryArgs args = new MergePolicyFactoryArgs();
-    if (wrappingNoCFSRatio != null) {
-      args.add("noCFSRatio", wrappingNoCFSRatio); // noCFSRatio for the wrapping merge policy
-    }
     args.add(WrapperMergePolicyFactory.WRAPPED_PREFIX, "wrapped");
     args.add("wrapped.class", TieredMergePolicyFactory.class.getName());
-    if (wrappedNoCFSRatio != null) {
-      args.add("wrapped.noCFSRatio", wrappedNoCFSRatio); // noCFSRatio for the wrapped merge policy
+    if (wrappedMaxMergedSegmentMB != null) {
+      args.add("wrapped.maxMergedSegmentMB", wrappedMaxMergedSegmentMB);
     }
 
-    MergePolicyFactory mpf;
-    try {
-      mpf = new UpgradeIndexMergePolicyFactory(resourceLoader, args, null);
-      assertFalse(
-          "Should only reach here if wrapping and wrapped args don't overlap!",
-          (wrappingNoCFSRatio != null && wrappedNoCFSRatio != null));
-
-      for (int ii = 1; ii <= 2; ++ii) { // it should be okay to call getMergePolicy() more than once
-        final MergePolicy mp = mpf.getMergePolicy();
-        if (wrappingNoCFSRatio != null) {
-          assertEquals(
-              "#" + ii + " wrappingNoCFSRatio", wrappingNoCFSRatio, mp.getNoCFSRatio(), 0.0d);
-        }
-        if (wrappedNoCFSRatio != null) {
-          assertEquals(
-              "#" + ii + " wrappedNoCFSRatio", wrappedNoCFSRatio, mp.getNoCFSRatio(), 0.0d);
-        }
-        assertSame(mp.getClass(), UpgradeIndexMergePolicy.class);
-      }
-
-    } catch (IllegalArgumentException iae) {
-      assertEquals(
-          "Wrapping and wrapped merge policy args overlap! [noCFSRatio]", iae.getMessage());
-      assertTrue(
-          "Should only reach here if wrapping and wrapped args do overlap!",
-          (wrappingNoCFSRatio != null && wrappedNoCFSRatio != null));
+    final MergePolicyFactory mpf = new UpgradeIndexMergePolicyFactory(resourceLoader, args, null);
+    for (int ii = 1; ii <= 2; ++ii) { // it should be okay to call getMergePolicy() more than once
+      final MergePolicy mp = mpf.getMergePolicy();
+      assertSame(mp.getClass(), UpgradeIndexMergePolicy.class);
     }
+  }
+
+  public void testUpgradeIndexMergePolicyFactoryOverlap() {
+    // Overlap detection happens at factory construction (before any setter is invoked), so it does
+    // not depend on the wrapping policy having a setter for the overlapping key.
+    final MergePolicyFactoryArgs args = new MergePolicyFactoryArgs();
+    args.add("maxMergedSegmentMB", 1.0);
+    args.add(WrapperMergePolicyFactory.WRAPPED_PREFIX, "wrapped");
+    args.add("wrapped.class", TieredMergePolicyFactory.class.getName());
+    args.add("wrapped.maxMergedSegmentMB", 2.0);
+
+    final IllegalArgumentException iae =
+        expectThrows(
+            IllegalArgumentException.class,
+            () -> new UpgradeIndexMergePolicyFactory(resourceLoader, args, null));
+    assertEquals(
+        "Wrapping and wrapped merge policy args overlap! [maxMergedSegmentMB]", iae.getMessage());
   }
 
   private static class DefaultingWrapperMergePolicyFactory extends WrapperMergePolicyFactory {

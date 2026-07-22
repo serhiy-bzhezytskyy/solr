@@ -41,8 +41,8 @@
     <mergePolicyFactory class="org.apache.solr.index.TieredMergePolicyFactory">
       <!-- intentionally set very low values here to trigger multiple flushes and merges.
            DO NOT USE THESE ABSURD VALUES IN PRODUCTION. -->
-      <int name="maxMergeAtOnce">3</int>
       <int name="segmentsPerTier">3</int>
+      <int name="maxMergeAtOnce">3</int>
     </mergePolicyFactory>
   </indexConfig>
 

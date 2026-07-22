@@ -16,13 +16,34 @@
  */
 package org.apache.solr.index;
 
+import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import org.apache.lucene.index.MergePolicy;
 import org.apache.solr.util.SolrPluginUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MergePolicyFactoryArgs {
+
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+  /**
+   * Merge-policy settings that existed in earlier Lucene versions but were removed in Lucene 11, so
+   * they no longer have a corresponding setter on the merge policy. A configuration that still
+   * specifies one of these is tolerated (with a warning) so that a core configured against an older
+   * Lucene keeps loading after the upgrade, rather than failing initialization.
+   *
+   * <ul>
+   *   <li>{@code maxMergeAtOnce} - removed from TieredMergePolicy (GITHUB#14165); the policy now
+   *       determines this automatically.
+   *   <li>{@code noCFSRatio} / {@code maxCFSSegmentSizeMB} - compound-file selection moved off the
+   *       merge policy and onto the codec's CompoundFormat (GITHUB#15295).
+   * </ul>
+   */
+  static final Set<String> REMOVED_LUCENE11_KEYS =
+      Set.of("maxMergeAtOnce", "noCFSRatio", "maxCFSSegmentSizeMB");
 
   final Map<String, Object> args;
 
@@ -54,7 +75,21 @@ public class MergePolicyFactoryArgs {
   }
 
   public void invokeSetters(MergePolicy policy) {
-    SolrPluginUtils.invokeSetters(policy, args.entrySet());
+    Map<String, Object> effectiveArgs = args;
+    for (String removed : REMOVED_LUCENE11_KEYS) {
+      if (args.containsKey(removed)) {
+        if (effectiveArgs == args) {
+          effectiveArgs = new HashMap<>(args);
+        }
+        effectiveArgs.remove(removed);
+        log.warn(
+            "Ignoring merge policy setting '{}' on {}: it was removed in Lucene 11 and has no "
+                + "effect. Remove it from your configuration.",
+            removed,
+            policy.getClass().getName());
+      }
+    }
+    SolrPluginUtils.invokeSetters(policy, effectiveArgs.entrySet());
   }
 
   @Override
