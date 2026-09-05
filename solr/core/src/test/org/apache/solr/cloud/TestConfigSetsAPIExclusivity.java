@@ -118,7 +118,7 @@ public class TestConfigSetsAPIExclusivity extends SolrTestCaseJ4 {
 
     @Override
     public void run() {
-      final SolrClient solrClient = solrCluster.getJettySolrRunners().get(0).newSolrClient(null);
+      final SolrClient solrClient = solrCluster.getJettySolrRunners().get(0).getSolrClient();
       ConfigSetAdminRequest<?, ?> request = createRequest();
 
       for (int i = 0; i < trials; ++i) {
@@ -127,11 +127,6 @@ public class TestConfigSetsAPIExclusivity extends SolrTestCaseJ4 {
         } catch (Exception e) {
           verifyException(e);
         }
-      }
-      try {
-        solrClient.close();
-      } catch (Exception e) {
-        log.error("Error closing client", e);
       }
     }
 

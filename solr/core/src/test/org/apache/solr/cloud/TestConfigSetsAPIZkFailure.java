@@ -108,7 +108,7 @@ public class TestConfigSetsAPIZkFailure extends SolrTestCaseJ4 {
 
   @Test
   public void testCreateZkFailure() throws Exception {
-    final SolrClient solrClient = solrCluster.getJettySolrRunners().get(0).newSolrClient(null);
+    final SolrClient solrClient = solrCluster.getJettySolrRunners().get(0).getSolrClient();
     final ConfigSetService configSetService =
         solrCluster.getOpenOverseer().getCoreContainer().getConfigSetService();
 
@@ -135,8 +135,6 @@ public class TestConfigSetsAPIZkFailure extends SolrTestCaseJ4 {
     } finally {
       zkClient.close();
     }
-
-    solrClient.close();
   }
 
   private void setupBaseConfigSet(String baseConfigSetName, Map<String, String> oldProps)
