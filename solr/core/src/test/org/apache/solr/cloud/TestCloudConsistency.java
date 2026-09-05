@@ -32,7 +32,6 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.SolrRequest.SolrRequestType;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.jetty.HttpJettySolrClient;
 import org.apache.solr.client.solrj.request.CollectionAdminRequest;
 import org.apache.solr.client.solrj.request.GenericSolrRequest;
 import org.apache.solr.common.SolrInputDocument;
@@ -310,26 +309,17 @@ public class TestCloudConsistency extends SolrCloudTestCase {
       List<Replica> notLeaders, String testCollectionName, int firstDocId, int lastDocId)
       throws Exception {
     Replica leader = cluster.getZkStateReader().getLeaderRetry(testCollectionName, "shard1", 10000);
-    SolrClient leaderSolr = getHttpSolrClient(leader, testCollectionName);
+    SolrClient leaderSolr = cluster.getSolrClient(leader);
     List<SolrClient> replicas = new ArrayList<>(notLeaders.size());
 
     for (Replica r : notLeaders) {
-      replicas.add(getHttpSolrClient(r, testCollectionName));
+      replicas.add(cluster.getSolrClient(r));
     }
-    try {
-      for (int d = firstDocId; d <= lastDocId; d++) {
-        String docId = String.valueOf(d);
-        assertDocExists(leaderSolr, docId);
-        for (SolrClient replicaSolr : replicas) {
-          assertDocExists(replicaSolr, docId);
-        }
-      }
-    } finally {
-      if (leaderSolr != null) {
-        leaderSolr.close();
-      }
+    for (int d = firstDocId; d <= lastDocId; d++) {
+      String docId = String.valueOf(d);
+      assertDocExists(leaderSolr, docId);
       for (SolrClient replicaSolr : replicas) {
-        replicaSolr.close();
+        assertDocExists(replicaSolr, docId);
       }
     }
   }
@@ -349,11 +339,5 @@ public class TestCloudConsistency extends SolrCloudTestCase {
                 SolrRequestType.QUERY,
                 params("id", docId, "distrib", "false"))
             .setRequiresCollection(true));
-  }
-
-  protected SolrClient getHttpSolrClient(Replica replica, String coll) {
-    return new HttpJettySolrClient.Builder(replica.getBaseUrl())
-        .withDefaultCollection(coll)
-        .build();
   }
 }
