@@ -211,11 +211,10 @@ public class BasicAuthIntegrationTest extends SolrCloudAuthTestCase {
 
     CollectionAdminRequest.Reload reload = CollectionAdminRequest.reloadCollection(COLLECTION);
 
-    try (var solrClient2 = secondRandomJetty.newSolrClient(null)) {
-      expectThrows(RemoteSolrException.class, () -> solrClient2.request(reload));
-      reload.setMethod(SolrRequest.METHOD.POST);
-      expectThrows(RemoteSolrException.class, () -> solrClient2.request(reload));
-    }
+    var solrClient2 = secondRandomJetty.getSolrClient();
+    expectThrows(RemoteSolrException.class, () -> solrClient2.request(reload));
+    reload.setMethod(SolrRequest.METHOD.POST);
+    expectThrows(RemoteSolrException.class, () -> solrClient2.request(reload));
     cluster
         .getSolrClient()
         .request(
