@@ -23,6 +23,7 @@ import java.nio.file.Path;
 import java.nio.file.attribute.FileOwnerAttributeView;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -57,6 +58,10 @@ public class AssertTool extends ToolBase {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private String message = null;
   private boolean useExitCode = false;
+
+  /** Exit code for an error, as opposed to the number of assertions that failed. */
+  private static final int ERROR_EXIT_CODE = 100;
+
   private Long timeoutMs = 1000L;
 
   /**
@@ -419,24 +424,29 @@ public class AssertTool extends ToolBase {
    */
   @Override
   public int runTool(CommandLine cli) throws Exception {
-    int toolExitStatus;
+    return runOrErrorExit(() -> runAssert(cli));
+  }
+
+  /**
+   * Runs the assertions for either parser. Since this is a CLI, an exception that has a message is
+   * reported without its stacktrace and becomes {@link #ERROR_EXIT_CODE}, which tells an error from
+   * a number of failed tests; one without a message is rethrown.
+   */
+  private int runOrErrorExit(Callable<Integer> run) throws Exception {
     try {
-      toolExitStatus = runAssert(cli);
+      return run.call();
     } catch (Exception exc) {
-      // since this is a CLI, spare the user the stacktrace
       String excMsg = exc.getMessage();
-      if (excMsg != null) {
-        if (isVerbose()) {
-          CLIO.err("\nERROR: " + exc + "\n");
-        } else {
-          CLIO.err("\nERROR: " + excMsg + "\n");
-        }
-        toolExitStatus = 100; // Exit >= 100 means error, else means number of tests that failed
-      } else {
+      if (excMsg == null) {
         throw exc;
       }
+      if (isVerbose()) {
+        CLIO.err("\nERROR: " + exc + "\n");
+      } else {
+        CLIO.err("\nERROR: " + excMsg + "\n");
+      }
+      return ERROR_EXIT_CODE;
     }
-    return toolExitStatus;
   }
 
   @Override
@@ -722,28 +732,15 @@ public class AssertTool extends ToolBase {
       assertions.add(new Assertion.NotCloudMode(cloudOptions.notCloudUrl));
     }
 
-    try {
-      return runAssert(
-          new AssertParams(
-              messageOpt,
-              timeoutOpt,
-              exitCodeOpt,
-              credentialsOptions.credentials,
-              List.copyOf(assertions)));
-    } catch (Exception exc) {
-      // Mirrors the commons-cli path's runTool() override: an assertion failure or other error
-      // with a message becomes exit code 100, not the ToolBase default of 1.
-      String excMsg = exc.getMessage();
-      if (excMsg == null) {
-        throw exc;
-      }
-      if (isVerbose()) {
-        CLIO.err("\nERROR: " + exc + "\n");
-      } else {
-        CLIO.err("\nERROR: " + excMsg + "\n");
-      }
-      return 100;
-    }
+    return runOrErrorExit(
+        () ->
+            runAssert(
+                new AssertParams(
+                    messageOpt,
+                    timeoutOpt,
+                    exitCodeOpt,
+                    credentialsOptions.credentials,
+                    List.copyOf(assertions))));
   }
 
   public static class AssertionFailureException extends Exception {
